@@ -48,6 +48,10 @@ use raklib\protocol\UnconnectedPong;
 use raklib\RakLib;
 
 class SessionManager{
+
+	const RAKLIB_TPS = 100;
+	const RAKLIB_TIME_PER_TICK = 1 / self::RAKLIB_TPS;
+	
 	/** @var \SplFixedArray<Packet|null> */
 	protected $packetPool;
 
@@ -67,7 +71,7 @@ class SessionManager{
 
 	protected $name = "";
 
-	protected $packetLimit = 1000;
+	protected $packetLimit = 200;
 
 	protected $shutdown = false;
 
@@ -120,12 +124,12 @@ class SessionManager{
 
 		while(!$this->shutdown){
 			$start = microtime(true);
-			$max = 5000;
+			$max = 1000;
 			while(--$max and $this->receivePacket()){}
 			while($this->receiveStream()){}
 			$time = microtime(true) - $start;
-			if($time < 0.05){
-				time_sleep_until(microtime(true) + 0.05 - $time);
+			if($time < self::RAKLIB_TIME_PER_TICK){
+				@time_sleep_until(microtime(true) + self::RAKLIB_TIME_PER_TICK - $time);
 			}
 			$this->tick();
 		}
@@ -145,7 +149,7 @@ class SessionManager{
 		$this->ipSec = [];
 
 
-		if(($this->ticks & 0b1111) === 0){
+		if(($this->ticks % self::RAKLIB_TPS) === 0){
 			$diff = max(0.005, $time - $this->lastMeasure);
 			$this->streamOption("bandwidth", serialize([
 				"up" => $this->sendBytes / $diff,
@@ -214,7 +218,9 @@ class SessionManager{
 						$this->streamRaw($source, $port, $buffer);
 					}
 				}catch(\Throwable $e){
-					$this->getLogger()->logException($e);
+					$logger = $this->getLogger();
+					$logger->debug("Packet from $source $port (" . strlen($buffer) . " bytes): 0x" . bin2hex($buffer));
+					$logger->logException($e);
 					$this->blockAddress($source, 5);
 				}
 			}
@@ -264,6 +270,12 @@ class SessionManager{
 
 	protected function streamOption($name, $value){
 		$buffer = chr(RakLib::PACKET_SET_OPTION) . chr(strlen($name)) . $name . $value;
+		$this->server->pushThreadToMainPacket($buffer);
+	}
+
+	public function streamPingMeasure(Session $session, $pingMS){
+		$identifier = $session->getAddress() . ":" . $session->getPort();
+		$buffer = chr(RakLib::PACKET_REPORT_PING) . chr(strlen($identifier)) . $identifier . Binary::writeInt($pingMS);
 		$this->server->pushThreadToMainPacket($buffer);
 	}
 
@@ -384,7 +396,7 @@ class SessionManager{
 		return $this->sessions[$id] ?? null;
 	}
 
-	public function createSession(string $ip, int $port, $clientId, int $mtuSize){
+	public function createSession($ip, $port, $clientId, $mtuSize){
 		$this->checkSessions();
 
 		$this->sessions[$ip . ":" . $port] = $session = new Session($this, $ip, $port, $clientId, $mtuSize);

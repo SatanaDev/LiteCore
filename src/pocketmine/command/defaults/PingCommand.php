@@ -19,36 +19,29 @@
  *
 */
 
-namespace raklib\protocol;
+namespace pocketmine\command\defaults;
 
-#include <rules/RakLibPacket.h>
+use pocketmine\command\CommandSender;
+use pocketmine\Player;
+use pocketmine\utils\TextFormat;
 
-use raklib\RakLib;
+class PingCommand extends VanillaCommand{
 
-class NewIncomingConnection extends Packet{
-	public static $ID = MessageIdentifiers::ID_NEW_INCOMING_CONNECTION;
-
-	public $address;
-	public $port;
-	
-	public $systemAddresses = [];
-	
-	public $sendPingTime;
-	public $sendPongTime;
-
-	public function encode(){
-		
+	public function __construct($name){
+		parent::__construct(
+			$name,
+			"Узнать свой пинг",
+			"/ping"
+		);
 	}
 
-	public function decode(){
-		parent::decode();
-		$this->getAddress($this->address, $this->port);
-		for($i = 0; $i < RakLib::$SYSTEM_ADDRESS_COUNT; ++$i){
-			$this->getAddress($addr, $port, $version);
-			$this->systemAddresses[$i] = [$addr, $port, $version];
+	public function execute(CommandSender $sender, $currentAlias, array $args){
+		if(!($sender instanceof Player)){
+			$sender->sendMessage(TextFormat::RED . "Только для игроков!");
+			return true;
 		}
 		
-		$this->sendPingTime = $this->getLong();
-		$this->sendPongTime = $this->getLong();
+		$sender->sendPing();
+		return true;
 	}
 }

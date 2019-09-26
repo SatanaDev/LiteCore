@@ -93,6 +93,10 @@ class Session{
 	private $reliableWindowEnd;
 	private $reliableWindow = [];
 	private $lastReliableIndex = -1;
+	/** @var float */
+	private $lastPingTime = -1;
+	/** @var int */
+	private $lastPingMeasure = 0;
 
 	public function __construct(SessionManager $sessionManager, $address, $port, $clientId, int $mtuSize){
 		$this->sessionManager = $sessionManager;
@@ -211,6 +215,11 @@ class Session{
 			}
 		}
 
+		if($this->lastPingTime + 5 < $time){
+			$this->sendPing();
+			$this->lastPingTime = $time;
+		}
+
 		$this->sendQueue();
 	}
 
@@ -248,6 +257,12 @@ class Session{
 			$this->sendDatagram($this->sendQueue);
 			$this->sendQueue = new DATA_PACKET_4();
 		}
+	}
+
+	private function sendPing(int $reliability = PacketReliability::UNRELIABLE){
+		$pk = new ConnectedPing();
+		$pk->sendPingTime = $this->sessionManager->getRakNetTimeMS();
+		$this->queueConnectedPacket($pk, $reliability, 0, RakLib::PRIORITY_IMMEDIATE);
 	}
 
 	/**
@@ -426,6 +441,9 @@ class Session{
 						$this->state = self::STATE_CONNECTED; //FINALLY!
 						$this->isTemporal = false;
 						$this->sessionManager->openSession($this);
+
+						$this->handlePong($dataPacket->sendPingTime, $dataPacket->sendPongTime);
+						$this->sendPing();
 					}
 				}
 			}elseif($id === DisconnectionNotification::$ID){
@@ -440,7 +458,13 @@ class Session{
 				$pk->sendPingTime = $dataPacket->sendPingTime;
 				$pk->sendPongTime = $this->sessionManager->getRakNetTimeMS();
 				$this->queueConnectedPacket($pk, PacketReliability::UNRELIABLE, 0);
-			}//TODO: add PING/PONG (0x00/0x03) automatic latency measure
+			}elseif($id === ConnectedPong::$ID){
+				$dataPacket = new ConnectedPong();
+				$dataPacket->buffer = $packet->buffer;
+				$dataPacket->decode();
+
+				$this->handlePong($dataPacket->sendPingTime, $dataPacket->sendPongTime);
+			}
 		}elseif($this->state === self::STATE_CONNECTED){
 			$this->sessionManager->streamEncapsulated($this, $packet);
 
@@ -448,6 +472,15 @@ class Session{
 		}else{
 			//$this->sessionManager->getLogger()->notice("Received packet before connection: " . bin2hex($packet->buffer));
 		}
+	}
+
+	/**
+	 * @param int $sendPingTime
+	 * @param int $sendPongTime TODO: clock differential stuff
+	 */
+	private function handlePong(int $sendPingTime, int $sendPongTime){
+		$this->lastPingMeasure = $this->sessionManager->getRakNetTimeMS() - $sendPingTime;
+		$this->sessionManager->streamPingMeasure($this, $this->lastPingMeasure);
 	}
 
 	public function handlePacket(Packet $packet){
