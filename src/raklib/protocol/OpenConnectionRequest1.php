@@ -26,17 +26,15 @@ class OpenConnectionRequest1 extends OfflineMessage{
 	public $protocol = RakLib::PROTOCOL;
 	public $mtuSize;
 
-	public function encode(){
-		parent::encode();
+	protected function encodePayload(){
 		$this->writeMagic();
 		$this->putByte($this->protocol);
-		$this->put(str_repeat(chr(0x00), $this->mtuSize - 18));
+		$this->buffer = str_pad($this->buffer, "\x00", $this->mtuSize);
 	}
 
-	public function decode(){
-		parent::decode();
+	protected function decodePayload(){
 		$this->readMagic();
 		$this->protocol = $this->getByte();
-		$this->mtuSize = strlen($this->get(true)) + 18;
+		$this->mtuSize = strlen($this->buffer);
 	}
 }

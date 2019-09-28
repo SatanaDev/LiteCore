@@ -24,16 +24,14 @@ class UnconnectedPong extends OfflineMessage{
 	public $serverID;
 	public $serverName;
 
-	public function encode(){
-		parent::encode();
+	protected function encodePayload(){
 		$this->putLong($this->pingID);
 		$this->putLong($this->serverID);
 		$this->writeMagic();
 		$this->putString($this->serverName);
 	}
 
-	public function decode(){
-		parent::decode();
+	protected function decodePayload(){
 		$this->pingID = $this->getLong();
 		$this->serverID = $this->getLong();
 		$this->readMagic();

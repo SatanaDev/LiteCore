@@ -22,24 +22,28 @@ class OpenConnectionReply2 extends OfflineMessage{
 
 	public $serverID;
 	public $clientAddress;
+	/** @var int */
 	public $clientPort;
+	/** @var int */
+	public $clientAddressVersion = 4;
+	/** @var int */
 	public $mtuSize;
+	/** @var bool */
+	public $serverSecurity = false;
 
-	public function encode(){
-		parent::encode();
+	protected function encodePayload(){
 		$this->writeMagic();
 		$this->putLong($this->serverID);
-		$this->putAddress($this->clientAddress, $this->clientPort, 4);
+		$this->putAddress($this->clientAddress, $this->clientPort, $this->clientAddressVersion);
 		$this->putShort($this->mtuSize);
-		$this->putByte(0); //server security
+		$this->putByte($this->serverSecurity ? 1 : 0);
 	}
 
-	public function decode(){
-		parent::decode();
+	protected function decodePayload(){
 		$this->readMagic();
 		$this->serverID = $this->getLong();
-		$this->getAddress($this->clientAddress, $this->clientPort);
+		$this->getAddress($this->clientAddress, $this->clientPort, $this->clientAddressVersion);
 		$this->mtuSize = $this->getShort();
-		$this->getByte(); //server security
+		$this->serverSecurity = $this->getByte() !== 0;
 	}
 }

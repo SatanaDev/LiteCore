@@ -22,21 +22,23 @@ class OpenConnectionRequest2 extends OfflineMessage{
 
 	public $clientID;
 	public $serverAddress;
+	/** @var int */
 	public $serverPort;
+	/** @var int */
+	public $serverAddressVersion;
+	/** @var int */
 	public $mtuSize;
 
-	public function encode(){
-		parent::encode();
+	public function encodePayload(){
 		$this->writeMagic();
-		$this->putAddress($this->serverAddress, $this->serverPort, 4);
+		$this->putAddress($this->serverAddress, $this->serverPort, $this->serverAddressVersion);
 		$this->putShort($this->mtuSize);
 		$this->putLong($this->clientID);
 	}
 
-	public function decode(){
-		parent::decode();
+	public function decodePayload(){
 		$this->readMagic();
-		$this->getAddress($this->serverAddress, $this->serverPort);
+		$this->getAddress($this->serverAddress, $this->serverPort, $this->serverAddressVersion);
 		$this->mtuSize = $this->getShort();
 		$this->clientID = $this->getLong();
 	}

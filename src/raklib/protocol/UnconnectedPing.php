@@ -22,14 +22,12 @@ class UnconnectedPing extends OfflineMessage{
 
 	public $pingID;
 
-	public function encode(){
-		parent::encode();
+	protected function encodePayload(){
 		$this->putLong($this->pingID);
 		$this->writeMagic();
 	}
 
-	public function decode(){
-		parent::decode();
+	protected function decodePayload(){
 		$this->pingID = $this->getLong();
 		$this->readMagic();
 	}

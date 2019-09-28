@@ -26,8 +26,7 @@ abstract class AcknowledgePacket extends Packet{
 	/** @var int[] */
 	public $packets = [];
 
-	public function encode(){
-		parent::encode();
+	protected function encodePayload(){
 		$payload = "";
 		sort($this->packets, SORT_NUMERIC);
 		$count = count($this->packets);
@@ -73,8 +72,7 @@ abstract class AcknowledgePacket extends Packet{
 		$this->buffer .= $payload;
 	}
 
-	public function decode(){
-		parent::decode();
+	protected function decodePayload(){
 		$count = $this->getShort();
 		$this->packets = [];
 		$cnt = 0;

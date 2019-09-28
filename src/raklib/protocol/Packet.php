@@ -29,6 +29,11 @@ abstract class Packet{
 	public $buffer;
 	public $sendTime;
 
+	public function __construct($buffer = "", $offset = 0){
+		$this->buffer = $buffer;
+		$this->offset = $offset;
+	}
+
 	protected function get($len){
 		if($len < 0){
 			$this->offset = strlen($this->buffer) - 1;
@@ -142,11 +147,32 @@ abstract class Packet{
 	}
 
 	public function encode(){
-		$this->buffer = chr(static::$ID);
+		$this->reset();
+		$this->encodeHeader();
+		$this->encodePayload();
 	}
 
+	protected function encodeHeader(){
+		$this->putByte(static::$ID);
+	}
+
+	abstract protected function encodePayload();
+
 	public function decode(){
-		$this->offset = 1;
+		$this->offset = 0;
+		$this->decodeHeader();
+		$this->decodePayload();
+	}
+
+	protected function decodeHeader(){
+		$this->getByte(); //PID
+	}
+
+	abstract protected function decodePayload();
+
+	public function reset(){
+		$this->buffer = "";
+		$this->offset = 0;
 	}
 
 	public function clean(){

@@ -20,22 +20,24 @@ namespace raklib\protocol;
 class OpenConnectionReply1 extends OfflineMessage{
 	public static $ID = MessageIdentifiers::ID_OPEN_CONNECTION_REPLY_1;
 
+	/** @var int */
 	public $serverID;
+	/** @var bool */
+	public $serverSecurity = false;
+	/** @var int */
 	public $mtuSize;
 
-	public function encode(){
-		parent::encode();
+	protected function encodePayload(){
 		$this->writeMagic();
 		$this->putLong($this->serverID);
-		$this->putByte(0); //Server security
+		$this->putByte($this->serverSecurity ? 1 : 0);
 		$this->putShort($this->mtuSize);
 	}
 
-	public function decode(){
-		parent::decode();
+	protected function decodePayload(){
 		$this->readMagic();
 		$this->serverID = $this->getLong();
-		$this->getByte(); //security
+		$this->serverSecurity = $this->getByte() !== 0;
 		$this->mtuSize = $this->getShort();
 	}
 }

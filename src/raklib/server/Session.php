@@ -20,8 +20,7 @@ use raklib\protocol\ConnectedPing;
 use raklib\protocol\ConnectedPong;
 use raklib\protocol\ConnectionRequest;
 use raklib\protocol\ConnectionRequestAccepted;
-use raklib\protocol\DATA_PACKET_4;
-use raklib\protocol\DataPacket;
+use raklib\protocol\Datagram;
 use raklib\protocol\DisconnectionNotification;
 use raklib\protocol\EncapsulatedPacket;
 use raklib\protocol\MessageIdentifiers;
@@ -63,7 +62,7 @@ class Session{
 
 	private $isTemporal = true;
 
-	/** @var DataPacket[] */
+	/** @var Datagram[] */
 	private $packetToSend = [];
 
 	private $isActive;
@@ -73,16 +72,16 @@ class Session{
 	/** @var int[] */
 	private $NACKQueue = [];
 
-	/** @var DataPacket[] */
+	/** @var Datagram[] */
 	private $recoveryQueue = [];
 
-	/** @var DataPacket[][] */
+	/** @var Datagram[][] */
 	private $splitPackets = [];
 
 	/** @var int[][] */
 	private $needACK = [];
 
-	/** @var DataPacket */
+	/** @var Datagram */
 	private $sendQueue;
 
 	private $windowStart;
@@ -103,7 +102,8 @@ class Session{
 		$this->address = $address;
 		$this->port = $port;
 		$this->id = $clientId;
-		$this->sendQueue = new DATA_PACKET_4();
+		$this->sendQueue = new Datagram();
+		$this->sendQueue->headerFlags |= Datagram::BITFLAG_NEEDS_B_AND_AS;
 		$this->lastUpdate = microtime(true);
 		$this->isActive = false;
 		$this->windowStart = -1;
@@ -227,7 +227,7 @@ class Session{
 		$this->sessionManager->removeSession($this, $reason);
 	}
 
-	private function sendDatagram(DataPacket $datagram){
+	private function sendDatagram(Datagram $datagram){
 		if($datagram->seqNumber !== null){
 			unset($this->recoveryQueue[$datagram->seqNumber]);
 		}
@@ -255,7 +255,8 @@ class Session{
 	public function sendQueue(){
 		if(count($this->sendQueue->packets) > 0){
 			$this->sendDatagram($this->sendQueue);
-			$this->sendQueue = new DATA_PACKET_4();
+			$this->sendQueue = new Datagram();
+			$this->sendQueue->headerFlags |= Datagram::BITFLAG_NEEDS_B_AND_AS;
 		}
 	}
 
@@ -303,9 +304,6 @@ class Session{
 			$this->needACK[$packet->identifierACK] = [];
 		}
 
-		if($packet->isReliable()){
-			$packet->messageIndex = $this->messageIndex++;
-		}
 		if($packet->isSequenced()){
 			$packet->orderIndex = $this->channelIndex[$packet->orderChannel]++;
 		}
@@ -315,20 +313,20 @@ class Session{
 
 		if(strlen($packet->buffer) > $maxSize){
 			$buffers = str_split($packet->buffer, $maxSize);
+			$bufferCount = count($buffers);
 			
 			$splitID = ++$this->splitID % 65536;
 			foreach($buffers as $count => $buffer){
 				$pk = new EncapsulatedPacket();
 				$pk->splitID = $splitID;
 				$pk->hasSplit = true;
-				$pk->splitCount = count($buffers);
+				$pk->splitCount = $bufferCount;
 				$pk->reliability = $packet->reliability;
 				$pk->splitIndex = $count;
 				$pk->buffer = $buffer;
-				if($count > 0){
+
+				if($packet->isReliable()){
 					$pk->messageIndex = $this->messageIndex++;
-				}else{
-					$pk->messageIndex = $packet->messageIndex;
 				}
 				
 				$pk->orderChannel = $packet->orderChannel;
@@ -337,6 +335,9 @@ class Session{
 				$this->addToQueue($pk, $flags | RakLib::PRIORITY_IMMEDIATE);
 			}
 		}else{
+			if($packet->isReliable()){
+				$packet->messageIndex = $this->messageIndex++;
+			}
 			$this->addToQueue($packet, $flags);
 		}
 	}
@@ -422,8 +423,7 @@ class Session{
 		if($id < MessageIdentifiers::ID_USER_PACKET_ENUM){ //internal data packet
 			if($this->state === self::STATE_CONNECTING){
 				if($id === ConnectionRequest::$ID){
-					$dataPacket = new ConnectionRequest;
-					$dataPacket->buffer = $packet->buffer;
+					$dataPacket = new ConnectionRequest($packet->buffer);
 					$dataPacket->decode();
 					
 					$pk = new ConnectionRequestAccepted;
@@ -433,8 +433,7 @@ class Session{
 					$pk->sendPongTime = $this->sessionManager->getRakNetTimeMS();
 					$this->queueConnectedPacket($pk, PacketReliability::UNRELIABLE, 0, RakLib::PRIORITY_IMMEDIATE);
 				}elseif($id === NewIncomingConnection::$ID){
-					$dataPacket = new NewIncomingConnection;
-					$dataPacket->buffer = $packet->buffer;
+					$dataPacket = new NewIncomingConnection($packet->buffer);
 					$dataPacket->decode();
 
 					if($dataPacket->port === $this->sessionManager->getPort() or !$this->sessionManager->portChecking){
@@ -442,7 +441,7 @@ class Session{
 						$this->isTemporal = false;
 						$this->sessionManager->openSession($this);
 
-						$this->handlePong($dataPacket->sendPingTime, $dataPacket->sendPongTime);
+						$this->handlePong($dataPacket->sendPingTime, $dataPacket->sendPongTime); //can't use this due to system-address count issues in MCPE
 						$this->sendPing();
 					}
 				}
@@ -450,8 +449,7 @@ class Session{
 				//TODO: we're supposed to send an ACK for this, but currently we're just deleting the session straight away
 				$this->disconnect("client disconnect");
 			}elseif($id === ConnectedPing::$ID){
-				$dataPacket = new ConnectedPing;
-				$dataPacket->buffer = $packet->buffer;
+				$dataPacket = new ConnectedPing($packet->buffer);
 				$dataPacket->decode();
 
 				$pk = new ConnectedPong;
@@ -459,8 +457,7 @@ class Session{
 				$pk->sendPongTime = $this->sessionManager->getRakNetTimeMS();
 				$this->queueConnectedPacket($pk, PacketReliability::UNRELIABLE, 0);
 			}elseif($id === ConnectedPong::$ID){
-				$dataPacket = new ConnectedPong();
-				$dataPacket->buffer = $packet->buffer;
+				$dataPacket = new ConnectedPong($packet->buffer);
 				$dataPacket->decode();
 
 				$this->handlePong($dataPacket->sendPingTime, $dataPacket->sendPongTime);
@@ -487,7 +484,7 @@ class Session{
 		$this->isActive = true;
 		$this->lastUpdate = microtime(true);
 
-		if($packet::$ID >= 0x80 and $packet::$ID <= 0x8f and $packet instanceof DataPacket){ //Data packet
+		if($packet instanceof Datagram){ //In reality, ALL of these packets are datagrams.
 			$packet->decode();
 
 			if($packet->seqNumber < $this->windowStart or $packet->seqNumber > $this->windowEnd or isset($this->receivedWindow[$packet->seqNumber])){

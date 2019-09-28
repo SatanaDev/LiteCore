@@ -26,6 +26,8 @@ class ConnectionRequestAccepted extends Packet{
 	public $address;
 	/** @var int */
 	public $port;
+	/** @var int */
+	public $addressVersion = 4;
 	/** @var array */
 	public $systemAddresses = [
 		["127.0.0.1", 0, 4]
@@ -36,9 +38,8 @@ class ConnectionRequestAccepted extends Packet{
 	/** @var int */
 	public $sendPongTime;
 
-	public function encode(){
-		parent::encode();
-		$this->putAddress($this->address, $this->port, 4);
+	protected function encodePayload(){
+		$this->putAddress($this->address, $this->port, $this->addressVersion);
 		$this->putShort(0);
 		for($i = 0; $i < RakLib::$SYSTEM_ADDRESS_COUNT; ++$i){
 			$addr = $this->systemAddresses[$i] ?? ["0.0.0.0", 0, 4];
@@ -49,8 +50,7 @@ class ConnectionRequestAccepted extends Packet{
 		$this->putLong($this->sendPongTime);
 	}
 
-	public function decode(){
-		parent::decode();
+	protected function decodePayload(){
 		//TODO, not needed yet
 	}
 }

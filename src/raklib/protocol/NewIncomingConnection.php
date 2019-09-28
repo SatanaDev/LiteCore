@@ -36,12 +36,11 @@ class NewIncomingConnection extends Packet{
 	public $sendPingTime;
 	public $sendPongTime;
 
-	public function encode(){
-		
+	protected function encodePayload(){
+		//TODO
 	}
 
-	public function decode(){
-		parent::decode();
+	protected function decodePayload(){
 		$this->getAddress($this->address, $this->port);
 		for($i = 0; $i < RakLib::$SYSTEM_ADDRESS_COUNT; ++$i){
 			$this->getAddress($addr, $port, $version);

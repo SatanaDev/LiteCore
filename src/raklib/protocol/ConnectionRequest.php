@@ -27,17 +27,15 @@ class ConnectionRequest extends Packet{
 	/** @var bool */
 	public $useSecurity = false;
 
-	public function encode(){
-		parent::encode();
+	protected function encodePayload(){
 		$this->putLong($this->clientID);
 		$this->putLong($this->sendPingTime);
 		$this->putByte($this->useSecurity ? 1 : 0);
 	}
 
-	public function decode(){
-		parent::decode();
+	protected function decodePayload(){
 		$this->clientID = $this->getLong();
 		$this->sendPingTime = $this->getLong();
-		$this->useSecurity = $this->getByte() > 0;
+		$this->useSecurity = $this->getByte() !== 0;
 	}
 }
