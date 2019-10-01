@@ -17,7 +17,6 @@
  * @author genisyspromcpe
  * @link https://github.com/genisyspromcpe/LiteCore
  *
- *
 */
 
 namespace pocketmine\entity;
