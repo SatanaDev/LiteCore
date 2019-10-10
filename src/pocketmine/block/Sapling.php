@@ -65,7 +65,7 @@ class Sapling extends Flowable {
 			4 => "Acacia Sapling",
 			5 => "Dark Oak Sapling",
 			6 => "",
-			7 => "" // 7 => "",
+			7 => "",
 		];
 		return $names[$this->meta & 0x07];
 	}

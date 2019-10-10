@@ -1,21 +1,20 @@
 <?php
 
 /*
- * _      _ _        _____               
- *| |    (_) |      / ____|              
- *| |     _| |_ ___| |     ___  _ __ ___ 
- *| |    | | __/ _ \ |    / _ \| '__/ _ \
- *| |____| | ||  __/ |___| (_) | | |  __/
- *|______|_|\__\___|\_____\___/|_|  \___|
  *
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
+ * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author genisyspromcpe
- * @link https://github.com/genisyspromcpe/LiteCore
+ * @author PocketMine Team
+ * @link http://www.pocketmine.net/
  *
  *
 */
@@ -63,10 +62,10 @@ use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
-use pocketmine\network\protocol\MobEffectPacket;
-use pocketmine\network\protocol\RemoveEntityPacket;
-use pocketmine\network\protocol\SetEntityDataPacket;
-use pocketmine\network\protocol\SetEntityLinkPacket;
+use pocketmine\network\mcpe\protocol\MobEffectPacket;
+use pocketmine\network\mcpe\protocol\RemoveEntityPacket;
+use pocketmine\network\mcpe\protocol\SetEntityDataPacket;
+use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
@@ -244,10 +243,10 @@ abstract class Entity extends Location implements Metadatable {
 		Entity::registerEntity(Guardian::class);
 		Entity::registerEntity(Horse::class);
 		Entity::registerEntity(Husk::class);
-		Entity::registerEntity(Ilama::class);
 		Entity::registerEntity(IronGolem::class);
 		Entity::registerEntity(LavaSlime::class); //Magma Cube
 		Entity::registerEntity(Lightning::class);
+		Entity::registerEntity(Llama::class);
 		Entity::registerEntity(Minecart::class);
 		Entity::registerEntity(MinecartChest::class);
 		Entity::registerEntity(MinecartHopper::class);
@@ -285,7 +284,6 @@ abstract class Entity extends Location implements Metadatable {
 		Entity::registerEntity(Zombie::class);
 		Entity::registerEntity(ZombieHorse::class);
 		Entity::registerEntity(ZombieVillager::class);
-		Entity::registerEntity(WitherTNT::class);
 
 		Entity::registerEntity(Human::class, true);
 	}
@@ -406,8 +404,6 @@ abstract class Entity extends Location implements Metadatable {
 	protected $activatedPressurePlates = [];
 
 	public $dropExp = [0, 0];
-	
-	public $isMorph = false;
 
 
 	/**
@@ -694,7 +690,7 @@ abstract class Entity extends Location implements Metadatable {
 	public function getOwningEntity(){
 		$eid = $this->getOwningEntityId();
 		if($eid !== null){
-			return $this->server->findEntity($eid, $this->level);
+			return $this->server->findEntity($eid);
 		}
 		return null;
 	}
@@ -922,8 +918,8 @@ abstract class Entity extends Location implements Metadatable {
 		]);
 
 		$this->namedtag->FallDistance = new FloatTag("FallDistance", $this->fallDistance);
-		$this->namedtag->Fire = new ShortTag("Fire", intval($this->fireTicks));
-		$this->namedtag->Air = new ShortTag("Air", intval($this->getDataProperty(self::DATA_AIR)));
+		$this->namedtag->Fire = new ShortTag("Fire", $this->fireTicks);
+		$this->namedtag->Air = new ShortTag("Air", $this->getDataProperty(self::DATA_AIR));
 		$this->namedtag->OnGround = new ByteTag("OnGround", $this->onGround == true ? 1 : 0);
 		$this->namedtag->Invulnerable = new ByteTag("Invulnerable", $this->invulnerable == true ? 1 : 0);
 
@@ -995,9 +991,6 @@ abstract class Entity extends Location implements Metadatable {
 	 * @param Player $player
 	 */
 	public function spawnTo(Player $player){
-		if(isset($this->hasSpawned[$player->getLoaderId()])){
-			$this->despawnFrom($player);
-		}
 		if(!isset($this->hasSpawned[$player->getLoaderId()]) and isset($player->usedChunks[Level::chunkHash($this->chunk->getX(), $this->chunk->getZ())])){
 			$this->hasSpawned[$player->getLoaderId()] = $player;
 		}
@@ -1187,7 +1180,7 @@ abstract class Entity extends Location implements Metadatable {
 	 * @return bool
 	 */
 	public function canCollideWith(Entity $entity){
-		return !$this->justCreated and $entity !== $this and !($entity instanceof Player and $entity->isSpectator());
+		return !$this->justCreated and $entity !== $this;
 	}
 
 	/**

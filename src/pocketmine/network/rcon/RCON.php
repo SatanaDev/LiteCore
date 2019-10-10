@@ -1,24 +1,31 @@
 <?php
 
 /*
- * _      _ _        _____               
- *| |    (_) |      / ____|              
- *| |     _| |_ ___| |     ___  _ __ ___ 
- *| |    | | __/ _ \ |    / _ \| '__/ _ \
- *| |____| | ||  __/ |___| (_) | | |  __/
- *|______|_|\__\___|\_____\___/|_|  \___|
  *
+ *  ____            _        _   __  __ _                  __  __ ____  
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
+ * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author genisyspromcpe
- * @link https://github.com/genisyspromcpe/LiteCore
- *
+ * @author PocketMine Team
+ * @link http://www.pocketmine.net/
+ * 
  *
 */
+
+/**
+ * Implementation of the Source RCON Protocol to allow remote console commands
+ * Source: https://developer.valvesoftware.com/wiki/Source_RCON_Protocol
+ *
+ * Implementation of the GeniRCON Protocol to allow full remote console access
+ * Source: https://github.com/iTXTech/GeniRCON
+ */
 
 namespace pocketmine\network\rcon;
 
@@ -52,6 +59,7 @@ class RCON {
 		$this->server = $server;
 		$this->workers = [];
 		$this->password = (string) $password;
+		$this->server->getLogger()->info("Starting remote control listener");
 		if($this->password === ""){
 			$this->server->getLogger()->critical("RCON can't be started: Empty password");
 
@@ -117,11 +125,6 @@ class RCON {
 					$command = $this->workers[$n]->cmd;
 
 					$this->server->getPluginManager()->callEvent($ev = new RemoteServerCommandEvent($response, $command));
-					$d = date("m.d.y H:i:s");
-					echo "\nRCON: $command\n";
-                    $a = @fopen("RCON.log","a+");
-                    fwrite($a,"[$d] $command\n");
-                    fclose($a);
 
 					if(!$ev->isCancelled()){
 						$this->server->dispatchCommand($ev->getSender(), $ev->getCommand());
@@ -135,4 +138,5 @@ class RCON {
 			}
 		}
 	}
+
 }

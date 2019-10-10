@@ -23,7 +23,7 @@ namespace pocketmine\entity;
 
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\item\Item as ItemItem;
-use pocketmine\network\protocol\AddEntityPacket;
+use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\Player;
 
 class Slime extends Living {
@@ -33,7 +33,7 @@ class Slime extends Living {
 
 	public $width = 0.3;
 	public $length = 0.9;
-	public $height = 0;
+	public $height = 5;
 
 	public $dropExp = [1, 4];
 

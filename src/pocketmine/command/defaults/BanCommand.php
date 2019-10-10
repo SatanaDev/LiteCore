@@ -1,21 +1,21 @@
 <?php
 
 /*
- * _      _ _        _____               
- *| |    (_) |      / ____|              
- *| |     _| |_ ___| |     ___  _ __ ___ 
- *| |    | | __/ _ \ |    / _ \| '__/ _ \
- *| |____| | ||  __/ |___| (_) | | |  __/
- *|______|_|\__\___|\_____\___/|_|  \___|
- *
- *
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author genisyspromcpe
- * @link https://github.com/genisyspromcpe/LiteCore
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
  *
  *
 */
@@ -28,26 +28,50 @@ use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
 
 class BanCommand extends VanillaCommand {
-	
+
+	/**
+	 * BanCommand constructor.
+	 *
+	 * @param string $name
+	 */
 	public function __construct($name){
-		parent::__construct("ban", "Бан игрока по нику");
+		parent::__construct(
+			$name,
+			"%pocketmine.command.ban.player.description",
+			"%commands.ban.usage"
+		);
 		$this->setPermission("pocketmine.command.ban.player");
 	}
 
-	public function execute(CommandSender $sender, $label, array $args) {
-        if($sender->hasPermission("pocketmine.command.ban.player")) {
-		    if(count($args) > 0) {
-                $player = $sender->getServer()->getPlayer($args[0]);
-			    if($player != null) {
-		            unset($args[0]);
- 		            $reason1 = implode(" ", $args);
-                    if(strlen($reason1) >= 1){
-                        $sender->getServer()->getNameBans()->addBan($player->getName(), $reason1, null, $sender->getName());
-                        $player->close("","§eТебя забанил игрок §6".$sender->getName()."\n§eПричина: §e".$reason1."");
-                        $sender->getServer()->broadcastMessage(" §eИгрок §6".$player->getName()." §eбыл забанен админом §a".$sender->getName()."\n§9Причина: §b".$reason1);
-                    } else return $sender->sendMessage("§7(§6Система§7) §cУкажите причину!");
-			    } else return $sender->sendMessage("§7(§6Система§7) §cИгрок не онлайн или вы ввели не верный ник.");
-	        } else return $sender->sendMessage("§7(§6Система§7) §eИспользуйте: §9/ban <ник> <причина>");
+	/**
+	 * @param CommandSender $sender
+	 * @param string        $currentAlias
+	 * @param array         $args
+	 *
+	 * @return bool
+	 */
+	public function execute(CommandSender $sender, $currentAlias, array $args){
+		if(!$this->testPermission($sender)){
+			return true;
 		}
+
+		if(count($args) === 0){
+			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
+
+			return false;
+		}
+
+		$name = array_shift($args);
+		$reason = implode(" ", $args);
+
+		$sender->getServer()->getNameBans()->addBan($name, $reason, null, $sender->getName());
+
+		if(($player = $sender->getServer()->getPlayerExact($name)) instanceof Player){
+			$player->kick($reason !== "" ? "Banned by admin. Reason: " . $reason : "Banned by admin.");
+		}
+
+		Command::broadcastCommandMessage($sender, new TranslationContainer("%commands.ban.success", [$player !== null ? $player->getName() : $name]));
+
+		return true;
 	}
 }

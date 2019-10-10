@@ -19,12 +19,14 @@
  *
 */
 
-namespace pocketmine\network;
+namespace pocketmine\network\mcpe;
 
 use pocketmine\event\player\PlayerCreationEvent;
-use pocketmine\network\protocol\DataPacket;
-use pocketmine\network\protocol\Info;
-use pocketmine\network\protocol\BatchPacket;
+use pocketmine\network\Network;
+use pocketmine\network\AdvancedSourceInterface;
+use pocketmine\network\mcpe\protocol\DataPacket;
+use pocketmine\network\mcpe\protocol\ProtocolInfo;
+use pocketmine\network\mcpe\protocol\BatchPacket;
 use pocketmine\Player;
 use pocketmine\Server;
 use raklib\protocol\EncapsulatedPacket;
@@ -242,8 +244,8 @@ class RakLibInterface implements ServerInstance, AdvancedSourceInterface {
 
 		$this->interface->sendOption("name",
 			"MCPE;" . rtrim(addcslashes($name, ";"), '\\') . ";" .
-			Info::CURRENT_PROTOCOL . ";" .
-			Info::MINECRAFT_VERSION_NETWORK . ";" .
+			ProtocolInfo::CURRENT_PROTOCOL . ";" .
+			ProtocolInfo::MINECRAFT_VERSION_NETWORK . ";" .
 			$poc . ";" .
 			$pc
 		);

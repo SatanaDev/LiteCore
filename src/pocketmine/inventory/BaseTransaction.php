@@ -85,7 +85,7 @@ class BaseTransaction implements Transaction {
 	public function getTargetItem(){
 		return clone $this->targetItem;
 	}
-
+	
 	/**
 	 * @return Item
 	 */

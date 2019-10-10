@@ -39,9 +39,6 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable {
 	protected $inventory;
 	/** @var DoubleChestInventory */
 	protected $doubleInventory = null;
-	
-	/** @var bool */
-	private $hasClosedPair = false;
 
 	/**
 	 * Chest constructor.
@@ -57,15 +54,13 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable {
 			$this->namedtag->Items->setTagType(NBT::TAG_Compound);
 		}
 		for($i = 0; $i < $this->getSize(); ++$i){
-			$this->inventory->setItem($i, $this->getItem($i));
+			$this->inventory->setItem($i, $this->getItem($i), false);
 		}
 	}
 
 	public function close(){
 		if($this->closed === false){
-			if($this->isPaired()){
-				$this->getPair()->hasClosedPair = true;
-			}
+
 			foreach($this->getInventory()->getViewers() as $player){
 				$player->removeWindow($this->getInventory());
 			}
@@ -73,6 +68,14 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable {
 			foreach($this->getInventory()->getViewers() as $player){
 				$player->removeWindow($this->getRealInventory());
 			}
+
+			if($this->doubleInventory !== null){
+				$this->doubleInventory->invalidate();
+				$this->doubleInventory = null;
+			}
+
+			$this->inventory = null;
+
 			parent::close();
 		}
 	}
@@ -187,8 +190,8 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable {
 				$pair->checkPairing();
 			}
 			if($this->doubleInventory === null){
-				if(($p = $pair->getDoubleInventory()) instanceof DoubleChestInventory){
-					$this->doubleInventory = $p;
+				if($pair->doubleInventory !== null){
+					$this->doubleInventory = $pair->doubleInventory;
 				}else{
 					if(($pair->x + ($pair->z << 15)) > ($this->x + ($this->z << 15))){ //Order them correctly
 						$this->doubleInventory = new DoubleChestInventory($pair, $this);
@@ -233,7 +236,7 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable {
 	 * @return bool
 	 */
 	public function isPaired(){
-		if(!isset($this->namedtag->pairx) or !isset($this->namedtag->pairz) or $this->hasClosedPair){
+		if(!isset($this->namedtag->pairx) or !isset($this->namedtag->pairz)){
 			return false;
 		}
 
@@ -266,8 +269,8 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable {
 
 		$this->createPair($tile);
 
-		$this->spawnToAll();
-		$tile->spawnToAll();
+		$this->onChanged();
+		$tile->onChanged();
 		$this->checkPairing();
 
 		return true;
@@ -295,12 +298,12 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable {
 		$tile = $this->getPair();
 		unset($this->namedtag->pairx, $this->namedtag->pairz);
 
-		$this->spawnToAll();
+		$this->onChanged();
 
 		if($tile instanceof Chest){
 			unset($tile->namedtag->pairx, $tile->namedtag->pairz);
 			$tile->checkPairing();
-			$tile->spawnToAll();
+			$tile->onChanged();
 		}
 		$this->checkPairing();
 

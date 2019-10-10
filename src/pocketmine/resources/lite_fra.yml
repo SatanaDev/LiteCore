@@ -1,3 +1,16 @@
+#   _____            _               _____           
+#  / ____|          (_)             |  __ \          
+# | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+# | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+# | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+#  \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+#                          __/ |                    
+#                         |___/                     
+#
+#
+#
+#Fichier de configuration avancé de GenisysPro
+
 #Version de ce fichier
 config:
  version: 28
@@ -67,7 +80,7 @@ server:
  advanced-command-selector: false
  #Définir si il faut activer ResourcePackManager
  enable-resource: false
- #Ce paramètre active ou désactive l'absorption d'eau par une éponge
+ #This parameter turns on or off the absorption of water by a sponge //TODO: Translation for other languages
  absorb-water: false
 
 enchantment:

@@ -25,8 +25,8 @@ use pocketmine\event\player\PlayerFishEvent;
 use pocketmine\item\Item as ItemItem;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\protocol\AddEntityPacket;
-use pocketmine\network\protocol\EntityEventPacket;
+use pocketmine\network\mcpe\protocol\AddEntityPacket;
+use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\Player;
 
 
@@ -91,48 +91,46 @@ class FishingHook extends Projectile {
 		$this->timings->startTiming();
 
 		$hasUpdate = parent::onUpdate($currentTick);
-         if($this->isInsideOfWater()){
-		if($this->isCollidedVertically && $this->isInsideOfWater()){
-			$this->motionX = 0;
-			$this->motionY += 0.01;
-			$this->motionZ = 0;
-			$this->motionChanged = true;
-			$hasUpdate = true;
-		}elseif($this->isCollided && $this->keepMovement === true){
-			$this->motionX = 0;
-			$this->motionY = 0;
-			$this->motionZ = 0;
-			$this->motionChanged = true;
-			$this->keepMovement = false;
-			$hasUpdate = true;
+        if($this->isInsideOfWater()){
+		    if($this->isCollidedVertically && $this->isInsideOfWater()){
+			    $this->motionX = 0;
+			    $this->motionY += 0.01;
+			    $this->motionZ = 0;
+			    $this->motionChanged = true;
+			    $hasUpdate = true;
+		    }elseif($this->isCollided && $this->keepMovement === true){
+			    $this->motionX = 0;
+			    $this->motionY = 0;
+			    $this->motionZ = 0;
+			    $this->motionChanged = true;
+			    $this->keepMovement = false;
+			    $hasUpdate = true;
+		    }
+		    if($this->attractTimer === 0 && mt_rand(0, 100) <= 60){ // chance, that a fish bites
+			    $this->coughtTimer = mt_rand(5, 10) * 20; // random delay to catch fish
+			    $this->attractTimer = 10 * 20; // reset timer
+			    $this->attractFish();
+			    $fishes = [ItemItem::RAW_FISH, ItemItem::RAW_SALMON, ItemItem::CLOWN_FISH, ItemItem::PUFFER_FISH];
+			    $fish = array_rand($fishes, 1);
+			    $item = ItemItem::get($fishes[$fish]);
+			    $this->getLevel()->getServer()->getPluginManager()->callEvent($ev = new PlayerFishEvent($this->shootingEntity, $item, $this));
+			    if(!$ev->isCancelled()){
+				    $this->shootingEntity->getInventory()->addItem($item);
+				    $this->shootingEntity->addXp(mt_rand(1, 3));
+			    }
+			    if($this->shootingEntity instanceof Player) {
+				    $this->shootingEntity->sendTip("§f§lКлюет§r!");
+			    }
+		    }elseif($this->attractTimer > 0){
+			    $this->attractTimer--;
+		    }
+		    if($this->coughtTimer > 0){
+			    $this->coughtTimer--;
+			    $this->fishBites();
+		    }
+		}else{
+			$this->shootingEntity->sendTip("§f§lЗакиньте удочку в воду.§r");
 		}
-		if($this->attractTimer === 0 && mt_rand(0, 100) <= 60){ // chance, that a fish bites
-			$this->coughtTimer = mt_rand(5, 10) * 20; // random delay to catch fish
-			$this->attractTimer = 10 * 20; // reset timer
-			$this->attractFish();
-			//
-			$fishes = [ItemItem::RAW_FISH, ItemItem::RAW_SALMON, ItemItem::CLOWN_FISH, ItemItem::PUFFER_FISH];
-			$fish = array_rand($fishes, 1);
-			$item = ItemItem::get($fishes[$fish]);
-			$this->getLevel()->getServer()->getPluginManager()->callEvent($ev = new PlayerFishEvent($this->shootingEntity, $item, $this));
-			if(!$ev->isCancelled()){
-				$this->shootingEntity->getInventory()->addItem($item);
-				$this->shootingEntity->addXp(mt_rand(1, 3));
-			}
-			if($this->shootingEntity instanceof Player) $this->shootingEntity->sendTip("§f§lКлюет§r!");
-			
-		}elseif($this->attractTimer > 0){
-			$this->attractTimer--;
-		}
-		if($this->coughtTimer > 0){
-			$this->coughtTimer--;
-			$this->fishBites();
-		}
-	
-			
-		 }else{
-			 $this->shootingEntity->sendTip("§f§lЗакиньте удочку в воду.§r");
-		 }
 
 		$this->timings->stopTiming();
 

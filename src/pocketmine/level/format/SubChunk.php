@@ -344,28 +344,13 @@ class SubChunk {
 		return "\x00" . $this->ids . $this->data . $this->skyLight . $this->blockLight;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function fastSerialize() : string{
-		return
-			$this->ids .
-			$this->data .
-			$this->skyLight .
-			$this->blockLight;
+	public function getBlockSkyLightArray() : string{
+		assert(strlen($this->skyLight) === 2048, "Wrong length of skylight array, expecting 2048 bytes, got " . strlen($this->skyLight));
+		return $this->skyLight;
 	}
-
-	/**
-	 * @param string $data
-	 *
-	 * @return SubChunk
-	 */
-	public static function fastDeserialize(string $data) : SubChunk{
-		return new SubChunk(
-			substr($data, 0, 4096), //ids
-			substr($data, 4096, 2048), //data
-			substr($data, 6144, 2048), //sky light
-			substr($data, 8192, 2048)  //block light
-		);
+	
+	public function setBlockSkyLightArray(string $data){
+		assert(strlen($data) === 2048, "Wrong length of skylight array, expecting 2048 bytes, got " . strlen($data));
+		$this->skyLight = $data;
 	}
 }

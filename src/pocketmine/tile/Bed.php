@@ -16,7 +16,6 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 
 class Bed extends Spawnable {
-
 	/**
 	 * Bed constructor.
 	 *
@@ -27,11 +26,8 @@ class Bed extends Spawnable {
 		if(!isset($nbt->color) or !($nbt->color instanceof ByteTag)){
 			$nbt->color = new ByteTag("color", 14); //default to old red
 		}
-
 		parent::__construct($level, $nbt);
 	}
-
-
 
 	/**
 	 * @return int
@@ -40,20 +36,13 @@ class Bed extends Spawnable {
 		return $this->namedtag->color->getValue();
 	}
 
-
-
 	/**
-
 	 * @param int $color
-
 	 */
-
 	public function setColor(int $color){
 		$this->namedtag["color"] = $color & 0x0f;
 		$this->onChanged();
 	}
-
-
 
 	/**
 	 * @return CompoundTag
@@ -67,4 +56,5 @@ class Bed extends Spawnable {
 			$this->namedtag->color
 		]);
 	}
+
 }

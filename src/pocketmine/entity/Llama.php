@@ -1,32 +1,34 @@
 <?php
 
 /*
- * _      _ _        _____               
- *| |    (_) |      / ____|              
- *| |     _| |_ ___| |     ___  _ __ ___ 
- *| |    | | __/ _ \ |    / _ \| '__/ _ \
- *| |____| | ||  __/ |___| (_) | | |  __/
- *|______|_|\__\___|\_____\___/|_|  \___|
  *
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author genisyspromcpe
- * @link https://github.com/genisyspromcpe/LiteCore
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
  *
  *
-*/
+ */
 
 namespace pocketmine\entity;
 
 use pocketmine\item\Item as ItemItem;
-use pocketmine\network\protocol\AddEntityPacket;
+use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\Player;
 
-class Ilama extends Animal {
+class Llama extends Animal {
 	const NETWORK_ID = 29;
 
 	const CREAMY = 0;
@@ -44,7 +46,7 @@ class Ilama extends Animal {
 	 * @return string
 	 */
 	public function getName(){
-		return "Ilama";
+		return "Llama";
 	}
 
 	public function initEntity(){

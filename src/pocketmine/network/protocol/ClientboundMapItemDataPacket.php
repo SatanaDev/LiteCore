@@ -45,6 +45,40 @@ class ClientboundMapItemDataPacket extends DataPacket {
 	 *
 	 */
 	public function decode(){
+		$this->mapId = $this->getVarInt();
+		$this->type = $this->getUnsignedVarInt();
+		if(($this->type & self::BITFLAG_ENTITY_UPDATE) !== 0){
+			$count = $this->getUnsignedVarInt();
+			for($i = 0; $i < $count; ++$i){
+				$this->eids[] = $this->getVarInt(); //entity unique ID, signed var-int
+			}
+		}
+		if(($this->type & (self::BITFLAG_DECORATION_UPDATE | self::BITFLAG_TEXTURE_UPDATE)) !== 0){ //Decoration bitflag or colour bitflag
+			$this->scale = $this->getByte();
+		}
+		if(($this->type & self::BITFLAG_DECORATION_UPDATE) !== 0){
+			$count = $this->getUnsignedVarInt();
+			for($i = 0; $i < $count; ++$i){
+				$weird = $this->getVarInt();
+				$this->decorations[$i]["rot"] = $weird & 0x0f;
+				$this->decorations[$i]["img"] = $weird >> 4;
+				$this->decorations[$i]["xOffset"] = $this->getByte();
+				$this->decorations[$i]["yOffset"] = $this->getByte();
+				$this->decorations[$i]["label"] = $this->getString();
+				$this->decorations[$i]["color"] = Color::fromARGB($this->getLInt()); //already BE, don't need to reverse it again
+			}
+		}
+		if(($this->type & self::BITFLAG_TEXTURE_UPDATE) !== 0){
+			$this->width = $this->getVarInt();
+			$this->height = $this->getVarInt();
+			$this->xOffset = $this->getVarInt();
+			$this->yOffset = $this->getVarInt();
+			for($y = 0; $y < $this->height; ++$y){
+				for($x = 0; $x < $this->width; ++$x){
+					$this->colors[$y][$x] = Color::fromABGR($this->getUnsignedVarInt());
+				}
+			}
+		}
 	}
 
 	/**

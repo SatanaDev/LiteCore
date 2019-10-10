@@ -30,7 +30,7 @@
 
 namespace pocketmine\inventory;
 
-use pocketmine\network\protocol\types\InventoryNetworkIds;
+use pocketmine\network\mcpe\protocol\types\InventoryNetworkIds;
 
 /**
  * Saves all the information regarding default inventory sizes and types
@@ -53,9 +53,8 @@ class InventoryType {
 	const HOPPER = 12;
 	const ENDER_CHEST = 13;
 	const BEACON = 14;
-    const SHULKER_BOX = 15;
 
-    const PLAYER_FLOATING = 254;
+	const PLAYER_FLOATING = 254;
 
 	private static $default = [];
 
@@ -94,7 +93,6 @@ class InventoryType {
 			static::HOPPER => new InventoryType(5, "Hopper", InventoryNetworkIds::HOPPER), //5 CONTAINER
 			static::ENDER_CHEST => new InventoryType(27, "Ender Chest", InventoryNetworkIds::CONTAINER),
 			static::BEACON => new InventoryType(0, "Beacon", InventoryNetworkIds::BEACON), //信标
-            static::SHULKER_BOX => new InventoryType(27, "ShulkerBox", InventoryNetworkIds::CONTAINER),
 
 			static::PLAYER_FLOATING => new InventoryType(36, "Floating", null) //Mirror all slots of main inventory (needed for large item pickups)
 		];

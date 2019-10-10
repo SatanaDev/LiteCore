@@ -231,10 +231,11 @@ class EmptySubChunk extends SubChunk {
 		return "\x00" . str_repeat("\x00", 10240);
 	}
 
-	/**
-	 * @return string
-	 */
-	public function fastSerialize() : string{
-		throw new \BadMethodCallException("Should not try to serialize empty subchunks");
+	public function getBlockSkyLightArray() : string{
+		return str_repeat("\xff", 2048);
+	}
+
+	public function setBlockSkyLightArray(string $data){
+		
 	}
 }

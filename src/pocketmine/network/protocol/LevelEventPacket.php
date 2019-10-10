@@ -81,14 +81,14 @@ class LevelEventPacket extends DataPacket {
 	const EVENT_CAULDRON_TAKE_WATER = 3507;
 	const EVENT_CAULDRON_ADD_DYE = 3508;
 
+	const EVENT_BLOCK_START_BREAK = 3600;
+	const EVENT_BLOCK_STOP_BREAK = 3601;
+
 	const EVENT_SET_DATA = 4000;
 
 	const EVENT_PLAYERS_SLEEPING = 9800;
 
 	const EVENT_ADD_PARTICLE_MASK = 0x4000;
-
-	const EVENT_BLOCK_START_BREAK = 3600;
-	const EVENT_BLOCK_STOP_BREAK = 3601;
 
 	public $evid;
 	public $x = 0; //Weather effects don't have coordinates

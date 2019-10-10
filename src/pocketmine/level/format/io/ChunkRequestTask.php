@@ -26,7 +26,6 @@ use pocketmine\level\Level;
 use pocketmine\nbt\NBT;
 use pocketmine\scheduler\AsyncTask;
 use pocketmine\Server;
-use pocketmine\tile\Spawnable;
 
 class ChunkRequestTask extends AsyncTask {
 
@@ -35,8 +34,6 @@ class ChunkRequestTask extends AsyncTask {
 	protected $chunk;
 	protected $chunkX;
 	protected $chunkZ;
-
-	protected $tiles;
 
 	/**
 	 * ChunkRequestTask constructor.
@@ -47,21 +44,9 @@ class ChunkRequestTask extends AsyncTask {
 	public function __construct(Level $level, Chunk $chunk){
 		$this->levelId = $level->getId();
 
-		$this->chunk = $chunk->fastSerialize();
+		$this->chunk = $chunk->networkSerialize();
 		$this->chunkX = $chunk->getX();
 		$this->chunkZ = $chunk->getZ();
-
-		//TODO: serialize tiles with chunks
-		$tiles = "";
-		$nbt = new NBT(NBT::LITTLE_ENDIAN);
-		foreach($chunk->getTiles() as $tile){
-			if($tile instanceof Spawnable){
-				$nbt->setData($tile->getSpawnCompound());
-				$tiles .= $nbt->write(true);
-			}
-		}
-
-		$this->tiles = $tiles;
 	}
 
 	public function onRun(){

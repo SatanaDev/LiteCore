@@ -26,6 +26,8 @@ namespace pocketmine\network\protocol;
 
 #include <rules/DataPacket.h>
 
+use pocketmine\Server;
+
 
 class LoginPacket extends DataPacket {
 	const NETWORK_ID = Info::LOGIN_PACKET;
@@ -56,7 +58,7 @@ class LoginPacket extends DataPacket {
 	 */
 	public function decode(){
 		$this->protocol = $this->getInt();
-		if(!in_array($this->protocol, Info::ACCEPTED_PROTOCOLS)){
+		if(!Server::getInstance()->allVersion and !in_array($this->protocol, Info::ACCEPTED_PROTOCOLS)){
 			$this->buffer = null;
 			return;
 		}

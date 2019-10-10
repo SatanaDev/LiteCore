@@ -1,21 +1,23 @@
 <?php
 
 /*
- * _      _ _        _____               
- *| |    (_) |      / ____|              
- *| |     _| |_ ___| |     ___  _ __ ___ 
- *| |    | | __/ _ \ |    / _ \| '__/ _ \
- *| |____| | ||  __/ |___| (_) | | |  __/
- *|______|_|\__\___|\_____\___/|_|  \___|
  *
+ *  _____            _               _____
+ * / ____|          (_)             |  __ \
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                         __/ |
+ *                        |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author genisyspromcpe
- * @link https://github.com/genisyspromcpe/LiteCore
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
  *
  *
 */
@@ -76,12 +78,12 @@ use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\CompressBatchedTask;
 use pocketmine\network\Network;
-use pocketmine\network\protocol\BatchPacket;
-use pocketmine\network\protocol\DataPacket;
-use pocketmine\network\protocol\Info as ProtocolInfo;
-use pocketmine\network\protocol\PlayerListPacket;
+use pocketmine\network\mcpe\protocol\BatchPacket;
+use pocketmine\network\mcpe\protocol\DataPacket;
+use pocketmine\network\mcpe\protocol\ProtocolInfo;
+use pocketmine\network\mcpe\protocol\PlayerListPacket;
 use pocketmine\network\query\QueryHandler;
-use pocketmine\network\RakLibInterface;
+use pocketmine\network\mcpe\RakLibInterface;
 use pocketmine\network\rcon\RCON;
 use pocketmine\network\upnp\UPnP;
 use pocketmine\permission\BanList;
@@ -126,7 +128,6 @@ class Server{
 
 	/** @var \Threaded */
 	private static $sleeper = null;
-	private static $serverId =  0;
 
 	/** @var BanList */
 	private $banByName = null;
@@ -320,7 +321,7 @@ class Server{
 	 * @return string
 	 */
 	public function getName() : string{
-		return "LiteCore";
+        return "LiteCore";
 	}
 
 	/**
@@ -371,6 +372,20 @@ class Server{
 
 	public function getFormattedVersion($prefix = ""){
 		return (\pocketmine\VERSION !== ""? $prefix . \pocketmine\VERSION : "");
+	}
+
+	/**
+		* @return string
+		*/
+	public function getGitCommit(){
+		return \pocketmine\GIT_COMMIT;
+	}
+
+	/**
+		* @return string
+		*/
+	public function getShortGitCommit(){
+		return substr(\pocketmine\GIT_COMMIT, 0, 7);
 	}
 
 	/**
@@ -1228,7 +1243,7 @@ class Server{
 
 		return true;
 	}
-	
+
 	/**
 	 * Searches all levels for the entity with the specified ID.
 	 * Useful for tracking entities across multiple worlds without needing strong references.
@@ -1239,18 +1254,13 @@ class Server{
 	 * @return Entity|null
 	 */
 	public function findEntity(int $entityId, Level $expectedLevel = null){
-		$levels = $this->levels;
-		if($expectedLevel !== null){
-			array_unshift($levels, $expectedLevel);
-		}
-		
-		foreach($levels as $level){
+		foreach($this->levels as $level){
 			assert(!$level->isClosed());
 			if(($entity = $level->getEntity($entityId)) instanceof Entity){
 				return $entity;
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -1504,9 +1514,26 @@ class Server{
 			Server::$sleeper->wait($ms);
 		}, $microseconds);
 	}
-	public static function getServerId(){
-		return self::$serverId;
+
+	public function about(){
+	    $version = implode(",",ProtocolInfo::MINECRAFT_VERSION);
+		$string = "
+                    
+	 _     _ _        ____               
+	| |   (_) |_ ___ / ___|___  _ __ ___ 
+	| |   | | __/ _ \ |   / _ \| '__/ _ \
+	| |___| | ||  __/ |__| (_) | | |  __/
+	|_____|_|\__\___|\____\___/|_|  \___|
+   
+   
+	MCPE Version: §b" . $version . "§f
+	PHP Version: §e" . PHP_VERSION . "§f
+	OS: §6" . PHP_OS ."§f
+	This core is maintained by §dYarkaDev (vk.com/yarka___ilin)§f and §dgenisyspromcpe (vk.com/ddosenka)
+	";
+	    $this->getLogger()->info($string);
 	}
+
 	public function loadAdvancedConfig(){
 		$this->playerMsgType = $this->getAdvancedProperty("server.player-msg-type", self::PLAYER_MSG_TYPE_MESSAGE);
 		$this->playerLoginMsg = $this->getAdvancedProperty("server.login-msg", "§3@player joined the game");
@@ -1630,13 +1657,18 @@ class Server{
 			if(!file_exists($dataPath . "crashdumps/")){
 				mkdir($dataPath . "crashdumps/", 0777);
 			}
+
 			$this->dataPath = realpath($dataPath) . DIRECTORY_SEPARATOR;
 			$this->pluginPath = realpath($pluginPath) . DIRECTORY_SEPARATOR;
+
 			$this->console = new CommandReader();
+
 			$version = new VersionString($this->getPocketMineVersion());
 			$this->version = $version;
+
 			$this->about();
-			$this->logger->info("Загрузка свойств и конфигураций...");
+
+			$this->logger->info("Loading properties and configuration...");
 			if(!file_exists($this->dataPath . "pocketmine.yml")){
 				if(file_exists($this->dataPath . "lang.txt")){
 					$langFile = new Config($configPath = $this->dataPath . "lang.txt", Config::ENUM, []);
@@ -1645,8 +1677,8 @@ class Server{
 						$wizardLang = $langName;
 						break;
 					}
-					if(file_exists($this->filePath . "src/pocketmine/resources/pocketmine_rus.yml")){
-						$content = file_get_contents($file = $this->filePath . "src/pocketmine/resources/pocketmine_rus.yml");
+					if(file_exists($this->filePath . "src/pocketmine/resources/pocketmine_$wizardLang.yml")){
+						$content = file_get_contents($file = $this->filePath . "src/pocketmine/resources/pocketmine_$wizardLang.yml");
 					}else{
 						$content = file_get_contents($file = $this->filePath . "src/pocketmine/resources/pocketmine_rus.yml");
 					}
@@ -1677,7 +1709,7 @@ class Server{
 
 			$lang = $this->getProperty("settings.language", BaseLang::FALLBACK_LANGUAGE);
 			if(file_exists($this->filePath . "src/pocketmine/resources/lite_$lang.yml")){
-				$content = file_get_contents($file = $this->filePath . "src/pocketmine/resources/lite_rus.yml");
+				$content = file_get_contents($file = $this->filePath . "src/pocketmine/resources/lite_$lang.yml");
 			}else{
 				$content = file_get_contents($file = $this->filePath . "src/pocketmine/resources/lite_rus.yml");
 			}
@@ -1718,10 +1750,22 @@ class Server{
 				"online-mode" => false,
 				"view-distance" => 8
 			]);
+
+			$onlineMode = $this->getConfigBoolean("online-mode", false);
+			if(!extension_loaded("openssl")){
+				$this->logger->warning("OpenSSL расширение не найдено.");
+				$this->logger->warning("Пожалуйста, настройте расширение OpenSSL для PHP, если Вы хотите использовать аутентификацию Xbox Live или ресурс-пак.");
+				$this->setConfigBool("online-mode", false);
+			}elseif(!$onlineMode){
+				$this->logger->warning("Проверка подлинности Xbox Live отключена.");
+			}
+
 			$this->forceLanguage = $this->getProperty("settings.force-language", false);
 			$this->baseLang = new BaseLang($this->getProperty("settings.language", BaseLang::FALLBACK_LANGUAGE));
 			$this->logger->info($this->getLanguage()->translateString("language.selected", [$this->getLanguage()->getName(), $this->getLanguage()->getLang()]));
+
 			$this->memoryManager = new MemoryManager($this);
+
 			if(($poolSize = $this->getProperty("settings.async-workers", "auto")) === "auto"){
 				$poolSize = ServerScheduler::$WORKERS;
 				$processors = Utils::getCoreCount() - 2;
@@ -1937,8 +1981,8 @@ class Server{
 			]), $this->dserverConfig["timer"]);
 
 			if($cfgVer > $advVer){
-				$this->logger->notice("Your lite.yml needs update");
-				$this->logger->notice("Current Version: $advVer   Latest Version: $cfgVer");
+				$this->logger->notice("Ваш lite.yml нуждается в обновлении");
+				$this->logger->notice("Текущая Версия: $advVer   Последняя Версия $cfgVer");
 			}
 
 			$this->start();
@@ -2041,7 +2085,7 @@ class Server{
 
 		return count($recipients);
 	}
-
+	
 	/**
 	 * @param string $title
 	 * @param string $subtitle
@@ -2202,7 +2246,7 @@ class Server{
 	}
 
 	public function reload(){
-		$this->logger->info("Saving levels...");
+		$this->logger->info("Сохранение миров...");
 
 		foreach($this->levels as $level){
 			$level->save();
@@ -2212,7 +2256,7 @@ class Server{
 		$this->pluginManager->clearPlugins();
 		$this->commandMap->clearCommands();
 
-		$this->logger->info("Reloading properties...");
+		$this->logger->info("Перезагрузка конфигураций...");
 		$this->properties->reload();
 		$this->advancedConfig->reload();
 		$this->loadAdvancedConfig();
@@ -2284,14 +2328,14 @@ class Server{
 				UPnP::RemovePortForward($this->getPort());
 			}
 
-			$this->getLogger()->debug("Disabling all plugins");
+			$this->getLogger()->debug("Отключение всех плагинов");
 			$this->pluginManager->disablePlugins();
 
 			foreach($this->players as $player){
 				$player->close($player->getLeaveMessage(), $this->getProperty("settings.shutdown-message", "Server closed"));
 			}
 
-			$this->getLogger()->debug("Unloading all levels");
+			$this->getLogger()->debug("Выгрузка всех миров");
 			foreach($this->getLevels() as $level){
 				$this->unloadLevel($level, true);
 			}
@@ -2400,9 +2444,8 @@ class Server{
 		$errline = $e->getLine();
 
 		$type = ($errno === E_ERROR or $errno === E_USER_ERROR) ? \LogLevel::ERROR : (($errno === E_USER_WARNING or $errno === E_WARNING) ? \LogLevel::WARNING : \LogLevel::NOTICE);
-		
-		$errstr = preg_replace('/\s+/', ' ', trim($errstr));
 
+		$errstr = preg_replace('/\s+/', ' ', trim($errstr));
 		$errfile = cleanPath($errfile);
 
 		if($this->logger instanceof MainLogger){
@@ -2830,10 +2873,9 @@ class Server{
 
 		//TimingsHandler::tick($this->currentTPS <= $this->profilingTickRate);
 
-		array_shift($this->tickAverage);
-		$this->tickAverage[] = $this->currentTPS;
-		array_shift($this->useAverage);
-		$this->useAverage[] = $this->currentUse;
+		$idx = $this->tickCounter % 20;
+		$this->tickAverage[$idx] = $this->currentTPS;
+		$this->useAverage[$idx] = $this->currentUse;
 
 		if(($this->nextTick - $tickTime) < -1){
 			$this->nextTick = $tickTime;
@@ -2842,25 +2884,6 @@ class Server{
 		}
 
 		return true;
-	}
-	
-	public function about(){
-	    $version = implode(",",ProtocolInfo::MINECRAFT_VERSION);
-		$string = "
-                    
-	 _     _ _        ____               
-	| |   (_) |_ ___ / ___|___  _ __ ___ 
-	| |   | | __/ _ \ |   / _ \| '__/ _ \
-	| |___| | ||  __/ |__| (_) | | |  __/
-	|_____|_|\__\___|\____\___/|_|  \___|
-   
-   
-	MCPE Version: §b" . $version . "§f
-	PHP Version: §e" . PHP_VERSION . "§f
-	OS: §6" . PHP_OS ."§f
-	This core is maintained by §dYarkaDev (vk.com/yarka___ilin)§f and §dgenisyspromcpe (vk.com/ddosenka)
-	";
-	    $this->getLogger()->info($string);
 	}
 
 }

@@ -366,7 +366,7 @@ class SessionManager{
 		}
 	}
 
-	public function unblockAddress(string $address){
+	public function unblockAddress($address){
 		unset($this->block[$address]);
 		$this->getLogger()->debug("Unblocked $address");
 	}
@@ -447,7 +447,7 @@ class SessionManager{
 	 *
 	 * @return Packet|null
 	 */
-	public function getPacketFromPool(int $id, string $buffer = ""){
+	public function getPacketFromPool($id, $buffer = ""){
 		$pk = $this->packetPool[$id];
 		if($pk !== null){
 			$pk = clone $pk;

@@ -197,7 +197,6 @@ class Item implements ItemIds, \JsonSerializable {
 
 			self::$list[self::RAW_FISH] = Fish::class;
 			self::$list[self::COOKED_FISH] = CookedFish::class;
-			self::$list[self::FISHING_ROD] = FishingRod::class;
 
 			self::$list[self::NETHER_QUARTZ] = NetherQuartz::class;
 			self::$list[self::POTION] = Potion::class;

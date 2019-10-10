@@ -21,6 +21,7 @@
 
 namespace pocketmine\block;
 
+use pocketmine\event\block\LeavesDecayEvent;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
@@ -85,7 +86,7 @@ class Leaves extends Transparent {
 			self::OAK => "Oak Leaves",
 			self::SPRUCE => "Spruce Leaves",
 			self::BIRCH => "Birch Leaves",
-			self::JUNGLE => "Jungle Leaves"
+			self::JUNGLE => "Jungle Leaves",
 		];
 		return $names[$this->meta & 0x03];
 	}
@@ -181,9 +182,9 @@ class Leaves extends Transparent {
 				$visited = [];
 				$check = 0;
 
-				//Server::getInstance()->getPluginManager()->callEvent($ev = new LeavesDecayEvent($this));
+				Server::getInstance()->getPluginManager()->callEvent($ev = new LeavesDecayEvent($this));
 
-				if($this->findLog($this, $visited, 0, $check) === true){
+				if($ev->isCancelled() or $this->findLog($this, $visited, 0, $check) === true){
 					$this->getLevel()->setBlock($this, $this, false, false);
 				}else{
 					$this->getLevel()->useBreakOn($this);

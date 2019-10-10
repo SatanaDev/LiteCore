@@ -1,9 +1,39 @@
-<?php namespace pocketmine\command\defaults;
+<?php
+
+/*
+ *
+ *  _____   _____   __   _   _   _____  __    __  _____
+ * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
+ * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
+ * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
+ * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
+ * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * @author iTX Technologies
+ * @link https://itxtech.org
+ *
+ */
+
+namespace pocketmine\command\defaults;
+
+
 use pocketmine\command\CommandSender;
 use pocketmine\event\TranslationContainer;
 use pocketmine\level\format\io\BaseLevelProvider;
 use pocketmine\nbt\tag\StringTag;
+
 class LvdatCommand extends VanillaCommand {
+
+	/**
+	 * LvdatCommand constructor.
+	 *
+	 * @param $name
+	 */
 	public function __construct($name){
 		parent::__construct(
 			$name,
@@ -13,6 +43,13 @@ class LvdatCommand extends VanillaCommand {
 		$this->setPermission("pocketmine.command.lvdat");
 	}
 
+	/**
+	 * @param CommandSender $sender
+	 * @param string        $currentAlias
+	 * @param array         $args
+	 *
+	 * @return bool
+	 */
 	public function execute(CommandSender $sender, $currentAlias, array $args){
 		if(!$this->testPermission($sender)){
 			return false;
@@ -87,6 +124,13 @@ class LvdatCommand extends VanillaCommand {
 		$provider->saveLevelData();
 		return true;
 	}
+
+	/**
+	 * @param CommandSender $c
+	 * @param               $world
+	 *
+	 * @return bool
+	 */
 	public function autoLoad(CommandSender $c, $world){
 		if($c->getServer()->isLevelLoaded($world)) return true;
 		if(!$c->getServer()->isLevelGenerated($world)){

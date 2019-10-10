@@ -35,7 +35,7 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
-use pocketmine\network\protocol\ContainerSetDataPacket;
+use pocketmine\network\mcpe\protocol\ContainerSetDataPacket;
 
 class Furnace extends Spawnable implements InventoryHolder, Container, Nameable {
 	/** @var FurnaceInventory */
@@ -66,7 +66,7 @@ class Furnace extends Spawnable implements InventoryHolder, Container, Nameable 
 			$this->namedtag->Items->setTagType(NBT::TAG_Compound);
 		}
 		for($i = 0; $i < $this->getSize(); ++$i){
-			$this->inventory->setItem($i, $this->getItem($i));
+			$this->inventory->setItem($i, $this->getItem($i), false);
 		}
 		if($this->namedtag["BurnTime"] > 0){
 			$this->scheduleUpdate();
@@ -104,6 +104,9 @@ class Furnace extends Spawnable implements InventoryHolder, Container, Nameable 
 			foreach($this->getInventory()->getViewers() as $player){
 				$player->removeWindow($this->getInventory());
 			}
+
+			$this->inventory = null;
+			
 			parent::close();
 		}
 	}
@@ -208,7 +211,7 @@ class Furnace extends Spawnable implements InventoryHolder, Container, Nameable 
 		}
 
 		if($this->namedtag["BurnTime"] > 0 and $ev->isBurning()){
-			if($fuel->getId() === Item::BUCKET and $fuel->getDamage() === Block::FLOWING_LAVA){
+			if($fuel->getId() === Item::BUCKET and $fuel->getDamage() === Item::LAVA){
 				$fuel = Item::get(Item::BUCKET, 0, 1);
 				$this->inventory->setFuel($fuel);
 			}else{

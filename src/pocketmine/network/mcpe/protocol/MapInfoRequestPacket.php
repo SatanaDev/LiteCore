@@ -19,20 +19,26 @@
  *
 */
 
-namespace pocketmine\network;
+namespace pocketmine\network\mcpe\protocol;
 
-use raklib\protocol\EncapsulatedPacket;
+class MapInfoRequestPacket extends DataPacket {
+	const NETWORK_ID = ProtocolInfo::MAP_INFO_REQUEST_PACKET;
 
-class CachedEncapsulatedPacket extends EncapsulatedPacket {
-
-	private $internalData = null;
+	public $uuid;
 
 	/**
-	 * @param bool $internal
 	 *
-	 * @return null|string
 	 */
-	public function toBinary($internal = false){
-		return $this->internalData === null ? ($this->internalData = parent::toBinary($internal)) : $this->internalData;
+	public function decode(){
+		$this->uuid = $this->getEntityId();
 	}
+
+	/**
+	 *
+	 */
+	public function encode(){
+		$this->reset();
+		$this->putEntityId($this->uuid);
+	}
+
 }

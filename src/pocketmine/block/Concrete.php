@@ -30,8 +30,6 @@ class Concrete extends Solid {
 
 	protected $id = self::CONCRETE;
 
-
-
 	/**
 	 * Concrete constructor.
 	 *
@@ -79,4 +77,5 @@ class Concrete extends Solid {
 		];
 		return $names[$this->meta & 0x0f];
 	}
+
 }

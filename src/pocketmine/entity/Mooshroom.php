@@ -24,7 +24,7 @@ namespace pocketmine\entity;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item as ItemItem;
-use pocketmine\network\protocol\AddEntityPacket;
+use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\Player;
 
 class Mooshroom extends Animal {
@@ -32,7 +32,7 @@ class Mooshroom extends Animal {
 
 	public $width = 0.3;
 	public $length = 0.9;
-	public $height = 0;
+	public $height = 1.8;
 
 	/**
 	 * @return string

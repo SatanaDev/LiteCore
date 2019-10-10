@@ -161,7 +161,7 @@ spawn-limits:
 
 auto-report:
  #Отправить отчеты о сбоях для обработки
- enabled: true
+ enabled: false
  send-code: true
  send-settings: true
  send-phpinfo: true

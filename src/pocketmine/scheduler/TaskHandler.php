@@ -133,10 +133,13 @@ class TaskHandler {
 	 * Changes to this function won't be recorded on the version.
 	 */
 	public function cancel(){
-		if(!$this->isCancelled()){
-			$this->task->onCancel();
+		try{
+			if(!$this->isCancelled()){
+				$this->task->onCancel();
+			}
+		}finally{
+			$this->remove();
 		}
-		$this->remove();
 	}
 
 	public function remove(){

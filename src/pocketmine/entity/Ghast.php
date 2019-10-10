@@ -21,7 +21,7 @@
 
 namespace pocketmine\entity;
 
-use pocketmine\network\protocol\AddEntityPacket;
+use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\Player;
 
 class Ghast extends FlyingAnimal {
@@ -29,7 +29,7 @@ class Ghast extends FlyingAnimal {
 
 	public $width = 6;
 	public $length = 6;
-	public $height = 0;
+	public $height = 6;
 
 	/**
 	 * @return string

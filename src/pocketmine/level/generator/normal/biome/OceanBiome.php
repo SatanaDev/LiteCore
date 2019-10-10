@@ -40,7 +40,7 @@ class OceanBiome extends WateryBiome {
 		$this->addPopulator($sugarcane);
 		$this->addPopulator($tallGrass);
 
-		$this->setElevation(46, 58);
+		$this->setElevation(46, 68);
 
 		$this->temperature = 0.5;
 		$this->rainfall = 0.5;

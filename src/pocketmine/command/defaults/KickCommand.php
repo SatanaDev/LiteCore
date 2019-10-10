@@ -1,28 +1,81 @@
-<?php namespace pocketmine\command\defaults;
+<?php
+
+/*
+ *
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
+ * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * @author PocketMine Team
+ * @link http://www.pocketmine.net/
+ *
+ *
+*/
+
+namespace pocketmine\command\defaults;
+
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
+
 class KickCommand extends VanillaCommand {
+
+	/**
+	 * KickCommand constructor.
+	 *
+	 * @param $name
+	 */
 	public function __construct($name){
-		parent::__construct("kick", "Выгнать игрока с сервера");
+		parent::__construct(
+			$name,
+			"%pocketmine.command.kick.description",
+			"%pocketmine.command.kick.usage"
+		);
 		$this->setPermission("pocketmine.command.kick");
 	}
-	public function execute(CommandSender $sender, $alias, array $args) {
-        if($sender->hasPermission("pocketmine.command.kick")) {
-            if(count($args) > 0) {
-                $player = $sender->getServer()->getPlayer($args[0]);
-                if($player != null) {
-			        unset($args[0]);
-		            $reason = implode(" ", $args);
-                    if(strlen($reason) >= 1) {
-                        $player->close("", "§eТебя кикнул с сервера §6".$sender->getName()."\n§eПричина: §6".$reason."");
-                        $sender->getServer()->broadcastMessage(" §eИгрок §6".$player->getName()." §eбыл кикнут игроком §a".$sender->getName()."\n§9Причина: §b".$reason);
-                    } else return $sender->sendMessage(" §cУкажите причину!");
-	            } else return $sender->sendMessage(" §cИгрок не онлайн или вы ввели не верный ник.");
-		    } else return $sender->sendMessage(" §eИспользуйте: §9/kick <ник> <причина>");
+
+	/**
+	 * @param CommandSender $sender
+	 * @param string        $currentAlias
+	 * @param array         $args
+	 *
+	 * @return bool
+	 */
+	public function execute(CommandSender $sender, $currentAlias, array $args){
+		if(!$this->testPermission($sender)){
+			return true;
 		}
+
+		if(count($args) === 0){
+			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
+
+			return false;
+		}
+
+		$name = array_shift($args);
+		$reason = trim(implode(" ", $args));
+
+		if(($player = $sender->getServer()->getPlayer($name)) instanceof Player){
+			$player->kick($reason);
+			if(strlen($reason) >= 1){
+				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.kick.success.reason", [$player->getName(), $reason]));
+			}else{
+				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.kick.success", [$player->getName()]));
+			}
+		}else{
+			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));
+		}
+
+
+		return true;
 	}
 }
-?>

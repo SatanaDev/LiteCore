@@ -27,9 +27,8 @@ namespace pocketmine\block;
 use pocketmine\item\Tool;
 
 class ConcretePowder extends Fallable {
+
 	protected $id = self::CONCRETE_POWDER;
-
-
 
 	/**
 	 * ConcretePowder constructor.
@@ -85,4 +84,5 @@ class ConcretePowder extends Fallable {
 		];
 		return $names[$this->meta & 0x0f];
 	}
+
 }

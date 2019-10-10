@@ -129,7 +129,7 @@ class Block extends Position implements BlockIds, Metadatable{
 			self::$list[self::WOOD_STAIRS] = WoodStairs::class;
 			self::$list[self::ENDER_CHEST] = EnderChest::class;
 			self::$list[self::CHEST] = Chest::class;
-			self::$list[self::SHULKER_BOX] = ShulkerBox::class;
+
 			self::$list[self::DIAMOND_ORE] = DiamondOre::class;
 			self::$list[self::DIAMOND_BLOCK] = Diamond::class;
 			self::$list[self::WORKBENCH] = Workbench::class;
@@ -197,13 +197,13 @@ class Block extends Position implements BlockIds, Metadatable{
 			self::$list[self::ENCHANTING_TABLE] = EnchantingTable::class;
 
 			self::$list[self::BREWING_STAND_BLOCK] = BrewingStand::class;
+			self::$list[self::END_PORTAL] = EndPortal::class;
 			self::$list[self::END_PORTAL_FRAME] = EndPortalFrame::class;
 			self::$list[self::END_STONE] = EndStone::class;
 
 			self::$list[self::END_STONE_BRICKS] = EndStoneBricks::class;
 			self::$list[self::END_ROD] = EndRod::class;
 
-			self::$list[self::UNDYED_SHULKER_BOX] = UndyedShulkerBox::class;
 			self::$list[self::PURPUR] = Purpur::class;
 			self::$list[self::PURPUR_STAIRS] = PurpurStairs::class;
 
@@ -685,7 +685,7 @@ class Block extends Position implements BlockIds, Metadatable{
 	public function getBreakTime(Item $item){
 		$base = $this->getHardness() * 1.5;
 		if($this->canBeBrokenWith($item)){
-			if(($this->getToolType() === Tool::TYPE_SHEARS and $item->isShears()) or ($this->getToolType() === Tool::TYPE_SWORD and $item->isSword())){
+			if($this->getToolType() === Tool::TYPE_SHEARS and $item->isShears()){
 				$base /= 15;
 			}elseif(
 				($this->getToolType() === Tool::TYPE_PICKAXE and ($tier = $item->isPickaxe()) !== false) or

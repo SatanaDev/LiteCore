@@ -21,7 +21,7 @@
 
 namespace pocketmine\entity;
 
-use pocketmine\network\protocol\AddEntityPacket;
+use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\Player;
 
 class Enderman extends Monster {
@@ -29,7 +29,7 @@ class Enderman extends Monster {
 
 	public $width = 0.3;
 	public $length = 0.9;
-	public $height = 0;
+	public $height = 1.8;
 
 	public $dropExp = [5, 5];
 

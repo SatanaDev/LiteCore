@@ -78,8 +78,8 @@ namespace pocketmine {
 
 	const VERSION = "1.1";
 	const API_VERSION = "3.0.1";
-	const CODENAME="AleksandrPavliuchenko";
-	const LITE_API_VERSION='2.0.0';
+	const CODENAME = "LlamaSpit";
+	const LITE_API_VERSION = '2.0.0';
 
 	/*
 	 * Startup code. Do not look at it, it may harm you.
@@ -126,7 +126,7 @@ namespace pocketmine {
 			throw new \ErrorException($message, 0, $severity, $file, $line);
 		}
 	});
-	
+
 	ini_set("allow_url_fopen", 1);
 	ini_set("display_errors", 1);
 	ini_set("display_startup_errors", 1);
@@ -404,7 +404,7 @@ namespace pocketmine {
 	$errors = 0;
 
 	if(php_sapi_name() !== "cli"){
-		$logger->critical("You must run PocketMine-MP using the CLI.");
+		$logger->critical("You must run GenisysPro using the CLI.");
 		++$errors;
 	}
 
@@ -428,21 +428,16 @@ namespace pocketmine {
 
 	if(extension_loaded("pocketmine")){
 		if(version_compare(phpversion("pocketmine"), "0.0.1") < 0){
-			$logger->critical("You have the native PocketMine extension, but your version is lower than 0.0.1.");
+			$logger->critical("You have the native GenisysPro extension, but your version is lower than 0.0.1.");
 			++$errors;
 		}elseif(version_compare(phpversion("pocketmine"), "0.0.4") > 0){
-			$logger->critical("You have the native PocketMine extension, but your version is higher than 0.0.4.");
+			$logger->critical("You have the native GenisysPro extension, but your version is higher than 0.0.4.");
 			++$errors;
 		}
 	}
 
 	if(extension_loaded("xdebug")){
-		$logger->warning("
-
-
-	You are running PocketMine with xdebug enabled. This has a major impact on performance.
-
-		");
+		$logger->warning("You are running GenisysPro with Xdebug enabled. This has a major impact on performance.");
 	}
 
 	if(!extension_loaded("curl")){
@@ -461,16 +456,25 @@ namespace pocketmine {
 	}
 
 	if($errors > 0){
-		$logger->critical("Please update your PHP from itxtech.org/genisys/get/, or recompile PHP again.");
+		$logger->critical("Please update or recompile PHP.");
 		$logger->shutdown();
 		$logger->join();
 		exit(1); //Exit with error
 	}
 
-	if(file_exists(\pocketmine\PATH . ".git/refs/heads/master")){ //Found Git information!
-		define('pocketmine\GIT_COMMIT', strtolower(trim(file_get_contents(\pocketmine\PATH . ".git/refs/heads/master"))));
-	}else{
-		define('pocketmine\GIT_COMMIT', "2164fd927a9d58cb71d85fe55a50e1327a5bbe12");
+	if(file_exists(\pocketmine\PATH . ".git/HEAD")){ //Found Git information!
+		$ref = trim(file_get_contents(\pocketmine\PATH . ".git/HEAD"));
+		if(preg_match('/^[0-9a-f]{40}$/i', $ref)){
+			define('pocketmine\GIT_COMMIT', strtolower($ref));
+		}elseif(substr($ref, 0, 5) === "ref: "){
+			$refFile = \pocketmine\PATH . ".git/" . substr(trim(file_get_contents(\pocketmine\PATH . ".git/HEAD")), 5);
+			if(is_file($refFile)){
+				define('pocketmine\GIT_COMMIT', strtolower(trim(file_get_contents($refFile))));
+			}
+		}
+	}
+	if(!defined('pocketmine\GIT_COMMIT')){
+		define('pocketmine\GIT_COMMIT', "0000000000000000000000000000000000000000");
 	}
 
 	@define("ENDIANNESS", (pack("d", 1) === "\77\360\0\0\0\0\0\0" ? Binary::BIG_ENDIAN : Binary::LITTLE_ENDIAN));
@@ -492,7 +496,7 @@ namespace pocketmine {
 	$logger->info("Stopping other threads");
 
 	$killer = new ServerKiller(8);
-	$killer->start();
+	$killer->start(PTHREADS_INHERIT_NONE);
 	usleep(10000); //Fixes ServerKiller not being able to start on single-core machines
 
 	$erroredThreads = 0;

@@ -104,7 +104,7 @@ class Bed extends Transparent {
 		$isNight = ($time >= Level::TIME_NIGHT and $time < Level::TIME_SUNRISE);
 
 		if($player instanceof Player and !$isNight){
-			$player->sendMessage(TextFormat::GRAY . "Вы можете спать только ночью!");
+			$player->sendMessage(TextFormat::GRAY . "You can only sleep at night"); //TODO; Translate it
 			return true;
 		}
 
@@ -125,7 +125,7 @@ class Bed extends Transparent {
 				$b = $blockWest;
 			}else{
 				if($player instanceof Player){
-					$player->sendMessage(TextFormat::GRAY . "Что-то не так с кроватью!");
+					$player->sendMessage(TextFormat::GRAY . "This bed is incomplete"); //TODO; Translate it
 				}
 
 				return true;
@@ -133,7 +133,7 @@ class Bed extends Transparent {
 		}
 
 		if($player instanceof Player and $player->sleepOn($b) === false){
-			$player->sendMessage(TextFormat::GRAY . "Эта кровать занята!");
+			$player->sendMessage(TextFormat::GRAY . "This bed is occupied"); //TODO; Translate it
 		}
 
 		return true;
