@@ -976,17 +976,16 @@ class Level implements ChunkManager, Metadatable
             $this->chunkCache = [];
             $this->blockCache = [];
         } else {
-            $count = 0;
-            foreach($this->blockCache as $list){
-                $count += count($list);
-                if($count > 2048){
-                    $this->blockCache = [];
-                    break;
-                }
+            if (count($this->chunkCache) > 768) {
+                $this->chunkCache = [];
+            }
+
+            if (count($this->blockCache) > 2048) {
+                $this->blockCache = [];
             }
 
         }
-
+        
     }
 
     public function clearChunkCache(int $chunkX, int $chunkZ) {
