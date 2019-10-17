@@ -978,23 +978,14 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 	 * @param $z
 	 * @param $payload
 	 */
-	public function sendChunk($x, $z, $payload){
+	public function sendChunk(int $x, int $z, BatchPacket $payload){
 		if($this->connected === false){
 			return;
 		}
 
 		$this->usedChunks[Level::chunkHash($x, $z)] = true;
 		$this->chunkLoadCount++;
-
-		if($payload instanceof DataPacket){
-			$this->dataPacket($payload);
-		}else{
-			$pk = new FullChunkDataPacket();
-			$pk->chunkX = $x;
-			$pk->chunkZ = $z;
-			$pk->data = $payload;
-			$this->batchDataPacket($pk);
-		}
+		$this->dataPacket($payload);
 
 		if($this->spawned){
 			foreach($this->level->getChunkEntities($x, $z) as $entity){
