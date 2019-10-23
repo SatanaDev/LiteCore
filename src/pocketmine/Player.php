@@ -161,6 +161,7 @@ use pocketmine\tile\ItemFrame;
 use pocketmine\tile\Spawnable;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
+use pocketmine\scheduler\CallbackTask;
 
 /**
  * Main class that handles networking, recovery, and packet sending to the server part
@@ -1814,8 +1815,8 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				}
 			}
 
-           if($newPos->y >= $this->lastY and $this->getInAirTicks() > 10){
-             if($this->isOnline() and $this->joined){
+           if($newPos->y >= $this->lastY and $this->getInAirTicks() > 40){
+             if($this->isOnline()){
                $this->server->getScheduler()->scheduleDelayedTask(new CallbackTask([$this, 'kick'], ['Flying is not allowed on this server']), 1);
              }
            }
