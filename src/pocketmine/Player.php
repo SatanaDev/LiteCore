@@ -1814,6 +1814,12 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				}
 			}
 
+           if($new->posY >= $this->lastY and $this->getInAirTicks() > 10){
+             if($this->isOnline() and $this->joined){
+               $this->server->getScheduler()->scheduleDelayedTask(new CallbackTask([$this, 'kick'], ['Flying is not allowed on this server']), 1);
+             }
+           }
+
 			if($diff > 0){
 				$this->x = $newPos->x;
 				$this->y = $newPos->y;
