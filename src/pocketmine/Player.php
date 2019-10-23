@@ -1802,7 +1802,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 
 			$diff = ($diffX ** 2 + $diffY ** 2 + $diffZ ** 2) / ($tickDiff ** 2);
 
-			if($this->isSurvival() and !$revert and $diff > 0.0625){
+			if($this->isSurvival() and !$revert and $diff > 0.0825){
 				$ev = new PlayerIllegalMoveEvent($this, $newPos);
 				$ev->setCancelled($this->allowMovementCheats);
 
@@ -1814,7 +1814,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				}
 			}
 
-           if($new->posY >= $this->lastY and $this->getInAirTicks() > 10){
+           if($newPos->y >= $this->lastY and $this->getInAirTicks() > 10){
              if($this->isOnline() and $this->joined){
                $this->server->getScheduler()->scheduleDelayedTask(new CallbackTask([$this, 'kick'], ['Flying is not allowed on this server']), 1);
              }
