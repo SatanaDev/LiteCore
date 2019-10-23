@@ -279,9 +279,15 @@ class Network {
 			}
 
 			$stream = new BinaryStream($str);
+            $count = 0;
 
 			while($stream->offset < $len){
 				$buf = $stream->getString();
+
+                if((++$count) > 500){
+                  throw new \InvalidArgumentException("BatchPacket is long");
+                }
+
 				if(($pk = $this->getPacket(ord($buf{0}))) !== null){
 					if($pk::NETWORK_ID === 0xfe){
 						throw new \InvalidStateException("Invalid BatchPacket inside BatchPacket");
